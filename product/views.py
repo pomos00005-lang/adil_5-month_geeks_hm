@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .seriallzers import CategoryListSerializer,CategoryDetailSerializer,ProductListSerializer,ProductDetailSerializer,ReviewListSerializer,ReviewDetailDetailSerializer
+from .seriallzers import CategoryListSerializer,CategoryDetailSerializer,ProductListSerializer,ProductDetailSerializer,ReviewListSerializer
 from .models import Category,Product,Review
 
 #CATEGORY LIST
