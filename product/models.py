@@ -18,9 +18,12 @@ class Product(models.Model):
     
     @property
     def medium_review(self):
-        medium = [i.star for i in self.reviews.all()]
-        return round(sum(medium) / len(medium),1)
-    
+        reviews = self.reviews.all()
+        if not reviews:
+            return 0
+        medium = [i.star for i in reviews]
+        return round(sum(medium) / len(medium), 1)
+
 class Review(models.Model):
     text = models.TextField(max_length=1000,verbose_name='отзыв')
     product = models.ForeignKey(Product,verbose_name='отзыв к продукту ',on_delete=models.CASCADE,related_name='reviews')
