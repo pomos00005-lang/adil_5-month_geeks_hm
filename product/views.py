@@ -1,8 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .seriallzers import CategoryListSerializer,CategoryDetailSerializer,ProductListSerializer,ProductDetailSerializer,ReviewListSerializer,ReviewDetailSerializer
+from .seriallzers import (CategoryListSerializer,CategoryDetailSerializer,ProductListSerializer,ProductDetailSerializer,ReviewListSerializer,ReviewDetailSerializer,
+                          ReviewValidateSerializer,ProductValidateSerializer,CategoryValidateSerializer)
 from .models import Category,Product,Review
+from django.db import transaction
+
 
 #CATEGORY LIST
 
@@ -16,9 +19,13 @@ def category_list_api_view(req):
         return Response(data=data)
 
     elif req.method == 'POST':
-        name = req.data.get('name')
+        serializer = CategoryValidateSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
 
-        category = Category.objects.create(name=name)
+        name = serializer.validated_data.get('name')
+        with transaction.atomic():
+            category = Category.objects.create(name=name)
+
         return Response(status=status.HTTP_201_CREATED,
                         data=CategoryDetailSerializer(category).data)
 
@@ -37,7 +44,10 @@ def category_detail_api_view(req,id):
         return Response(data=data)
     
     elif req.method == 'PUT':
-        category.name = req.data.get('name')
+        serializer = CategoryValidateSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+
+        category.name = serializer.validated_data.get('name')
         category.save()
         return Response(status=status.HTTP_201_CREATED,
                         data=CategoryDetailSerializer(category).data)
@@ -57,17 +67,21 @@ def product_list_api_view(req):
         return Response(data=data)
     
     elif req.method == 'POST':
-        title = req.data.get('title')
-        description = req.data.get('description')
-        price = req.data.get('price')
-        category_id = req.data.get('category_id')
 
-        product = Product.objects.create(
-            title=title,
-            description=description,
-            price=price,
-            category_id=category_id
-        )
+        serializer = ProductValidateSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+
+        title = serializer.validated_data.get('title')
+        description = serializer.validated_data.get('description')
+        price = serializer.validated_data.get('price')
+        category_id = serializer.validated_data.get('category_id')
+        with transaction.atomic():
+            product = Product.objects.create(
+                title=title,
+                description=description,
+                price=price,
+                category_id=category_id
+            )
         return Response(status=status.HTTP_201_CREATED,
                         data=ProductDetailSerializer(product).data)
 
@@ -85,10 +99,16 @@ def product_detail_api_view(req,id):
         data = ProductDetailSerializer(product,many=False).data
         return Response(data=data)
     elif req.method == 'PUT':
-        product.title = req.data.get('title')
-        product.description = req.data.get('description')
-        product.price = req.data.get('price')
-        product.category_id = req.data.get('category_id')
+
+        serializer = ProductValidateSerializer(data=req.data)
+        serializer.is_valid(raise_exception=True)
+
+
+
+        product.title = serializer.validated_data.get('title')
+        product.description = serializer.validated_data.get('description')
+        product.price = serializer.validated_data.get('price')
+        product.category_id = serializer.validated_data.get('category_id')
         product.save()
         return Response(status=status.HTTP_201_CREATED,
                         data=ProductDetailSerializer(product).data)
@@ -107,14 +127,18 @@ def review_list_api_view(req):
         return Response(data=data)
     
     elif req.method == 'POST':
-        text = req.data.get('text')
-        product_id = req.data.get('product_id')
-        star = req.data.get('star')
-        product = Review.objects.create(
-            text=text,
-            product_id=product_id,
-            star=star
-        )
+        serailizer = ReviewValidateSerializer(data=req.data)
+        serailizer.is_valid(raise_exception=True)
+
+        text = serailizer.validated_data.get('text')
+        product_id = serailizer.validated_data.get('product_id')
+        star = serailizer.validated_data.get('star')
+        with transaction.atomic():
+            product = Review.objects.create(
+                text=text,
+                product_id=product_id,
+                star=star
+            )
         return Response(status=status.HTTP_201_CREATED,
                         data=ReviewDetailSerializer(product).data)
 
@@ -133,9 +157,12 @@ def review_detail_api_view(req,id):
         return Response(data=data)
     
     elif req.method == 'PUT':
-        review.text = req.data.get('text')
-        review.product_id = req.data.get('product_id')
-        review.star = req.data.get('star')
+        serailizer = ReviewValidateSerializer(data=req.data)
+        serailizer.is_valid(raise_exception=True)
+
+        review.text = serailizer.validated_data.get('text')
+        review.product_id = serailizer.validated_data.get('product_id')
+        review.star = serailizer.validated_data.get('star')
         review.save()
         return Response(status=status.HTTP_200_OK,
                         data=ReviewDetailSerializer(review).data)
