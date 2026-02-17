@@ -9,8 +9,10 @@ class CategoryListSerializer(serializers.ModelSerializer):
         fields = 'name count'.split()
     def get_count(self,category):
         return len(category.product_category.all())
+
 class CategoryDetailSerializer(serializers.ModelSerializer):
     count = serializers.SerializerMethodField()
+    
     class Meta:
         model = Category
         fields = '__all__'
